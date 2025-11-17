@@ -1,14 +1,25 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Permisos para Android 12 y anteriores -->
+    <!-- Permisos necesarios según versión de Android -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    
+    <!-- Android 13+ (API 33+) - Solo lectura de imágenes -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    
+    <!-- Android 10-12 (API 29-32) - Scoped Storage -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
         android:maxSdkVersion="32"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
-        android:maxSdkVersion="32"/>
     
-    <!-- Permisos para Android 13+ (API 33+) -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- Android 9 y anteriores (API 28-) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+        android:maxSdkVersion="29"
+        tools:ignore="ScopedStorage"/>
+    
+    <!-- Cámara -->
     <uses-permission android:name="android.permission.CAMERA"/>
+    
+    <!-- Features opcionales -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
     
     <application
         android:label="MiNegocio"
@@ -41,7 +52,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
             
-        <!-- FileProvider para compartir archivos -->
+        <!-- FileProvider para compartir archivos en Android 7+ -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -53,12 +64,9 @@
         </provider>
     </application>
     
-    <!-- Consultas para compartir archivos -->
+    <!-- Queries para Android 11+ -->
     <queries>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:mimeType="*/*" />
-        </intent>
+        <!-- Compartir imágenes -->
         <intent>
             <action android:name="android.intent.action.SEND" />
             <data android:mimeType="image/*" />
@@ -66,6 +74,11 @@
         <intent>
             <action android:name="android.intent.action.SEND_MULTIPLE" />
             <data android:mimeType="image/*" />
+        </intent>
+        <!-- Ver archivos -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="*/*" />
         </intent>
     </queries>
 </manifest>

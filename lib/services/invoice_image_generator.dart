@@ -11,6 +11,8 @@ import '../models/business_profile.dart';
 class InvoiceImageGenerator {
   static final GlobalKey _globalKey = GlobalKey();
 
+  /// Genera una imagen temporal de la boleta
+  /// Esta imagen se puede usar para compartir o guardar en galería
   static Future<String> generateImage({
     required Invoice invoice,
     required BusinessProfile businessProfile,
@@ -46,13 +48,13 @@ class InvoiceImageGenerator {
       overlay.insert(overlayEntry);
 
       // Esperar a que se renderice
-      await Future.delayed(const Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // Capturar la imagen
       RenderRepaintBoundary boundary =
           _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
       
-      ui.Image image = await boundary.toImage(pixelRatio: 2.0);
+      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
@@ -61,16 +63,15 @@ class InvoiceImageGenerator {
       // Remover el overlay
       overlayEntry.remove();
 
-      // Guardar la imagen
-      final directory = await getApplicationDocumentsDirectory();
-      final imagePath =
-          '${directory.path}/invoice_${invoice.invoiceNumber}_${DateTime.now().millisecondsSinceEpoch}.png';
+      // Guardar la imagen TEMPORAL (no en galería)
+      final directory = await getTemporaryDirectory();
+      final tempPath = '${directory.path}/temp_invoice_${invoice.invoiceNumber}_${DateTime.now().millisecondsSinceEpoch}.png';
       
-      final file = File(imagePath);
+      final file = File(tempPath);
       await file.writeAsBytes(pngBytes);
 
-      print('✅ Imagen guardada: $imagePath');
-      return imagePath;
+      print('✅ Imagen temporal guardada: $tempPath');
+      return tempPath;
     } catch (e, stackTrace) {
       print('❌ Error en generateImage: $e');
       print('Stack: $stackTrace');

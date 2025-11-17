@@ -4,50 +4,34 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
 class AppPermissionHandler {
-  /// Solicita permisos para guardar/leer imágenes según la versión de Android
+  /// Solicita permisos para GUARDAR imágenes en la galería según versión de Android
+  /// Compatible con políticas de Google Play Store
   static Future<bool> requestStoragePermission(BuildContext context) async {
     try {
+      if (!Platform.isAndroid) {
+        return true; // iOS maneja permisos automáticamente
+      }
+
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       final sdkInt = androidInfo.version.sdkInt;
 
       print('📱 Android SDK: $sdkInt');
 
-      // Android 13+ (API 33+) - Solo necesita READ_MEDIA_IMAGES
+      // Android 13+ (API 33+) - No necesita permisos para guardar en galería
+      // Usa MediaStore API que no requiere permisos
       if (sdkInt >= 33) {
-        print('📱 Android 13+: Verificando permisos de medios...');
-        
-        final status = await Permission.photos.status;
-        
-        if (status.isGranted) {
-          print('✅ Permisos ya otorgados');
-          return true;
-        }
-        
-        if (status.isDenied) {
-          final result = await Permission.photos.request();
-          
-          if (result.isGranted) {
-            print('✅ Permisos otorgados');
-            return true;
-          } else if (result.isPermanentlyDenied) {
-            _showPermissionDeniedDialog(context, true);
-            return false;
-          } else {
-            _showPermissionDeniedDialog(context, false);
-            return false;
-          }
-        }
-        
-        if (status.isPermanentlyDenied) {
-          _showPermissionDeniedDialog(context, true);
-          return false;
-        }
-        
-        return false;
+        print('✅ Android 13+: No requiere permisos para guardar (usa MediaStore)');
+        return true;
       } 
-      // Android 10-12 (API 29-32)
+      // Android 10-12 (API 29-32) - Scoped Storage
+      // No necesita permisos para guardar en directorios públicos
       else if (sdkInt >= 29) {
-        print('📱 Android 10-12: Verificando permisos de almacenamiento...');
+        print('✅ Android 10-12: No requiere permisos (Scoped Storage)');
+        return true;
+      } 
+      // Android 9 y anteriores (API 28-) - Necesita WRITE_EXTERNAL_STORAGE
+      else {
+        print('📱 Android 9-: Verificando permisos de almacenamiento...');
         
         final status = await Permission.storage.status;
         
@@ -77,57 +61,47 @@ class AppPermissionHandler {
         }
         
         return false;
-      } 
-      // Android 9 y anteriores (API 28-)
-      else {
-        print('📱 Android 9-: Verificando permisos de almacenamiento...');
-        
-        final status = await Permission.storage.status;
-        
-        if (status.isGranted) {
-          print('✅ Permisos ya otorgados');
-          return true;
-        }
-        
-        final result = await Permission.storage.request();
-        
-        if (result.isGranted) {
-          print('✅ Permisos otorgados');
-          return true;
-        } else if (result.isPermanentlyDenied) {
-          _showPermissionDeniedDialog(context, true);
-          return false;
-        } else {
-          _showPermissionDeniedDialog(context, false);
-          return false;
-        }
       }
     } catch (e) {
       print('❌ Error al verificar permisos: $e');
-      _showPermissionErrorDialog(context);
       return false;
     }
   }
 
-  /// Solicita permisos para acceder a la galería (al seleccionar imágenes)
+  /// Solicita permisos para LEER/ACCEDER a la galería (al seleccionar imágenes)
+  /// Compatible con políticas de Google Play Store
   static Future<bool> requestGalleryPermission(BuildContext context) async {
     try {
+      if (!Platform.isAndroid) {
+        return true;
+      }
+
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       final sdkInt = androidInfo.version.sdkInt;
 
       print('📷 Solicitando permisos de galería - SDK: $sdkInt');
 
-      // Android 13+ - Solo lectura de imágenes
+      // Android 13+ (API 33+) - READ_MEDIA_IMAGES
       if (sdkInt >= 33) {
         final status = await Permission.photos.status;
         
         if (status.isGranted) {
+          print('✅ Permiso de fotos otorgado');
           return true;
         }
         
         if (status.isDenied) {
           final result = await Permission.photos.request();
-          return result.isGranted;
+          
+          if (result.isGranted) {
+            print('✅ Permiso de fotos otorgado');
+            return true;
+          } else if (result.isPermanentlyDenied) {
+            _showGalleryPermissionDialog(context);
+            return false;
+          }
+          
+          return false;
         }
         
         if (status.isPermanentlyDenied) {
@@ -137,7 +111,7 @@ class AppPermissionHandler {
         
         return false;
       } 
-      // Android 10-12
+      // Android 10-12 (API 29-32) - READ_EXTERNAL_STORAGE
       else if (sdkInt >= 29) {
         final status = await Permission.storage.status;
         
@@ -154,7 +128,7 @@ class AppPermissionHandler {
         
         return result.isGranted;
       } 
-      // Android 9-
+      // Android 9- (API 28-) - READ_EXTERNAL_STORAGE
       else {
         final status = await Permission.storage.status;
         
@@ -229,8 +203,8 @@ class AppPermissionHandler {
         content: Text(
           isPermanent
               ? 'Los permisos de almacenamiento han sido denegados permanentemente.\n\n'
-                'Para guardar y compartir boletas, necesitas habilitar los permisos manualmente desde la configuración.'
-              : 'Para guardar y compartir boletas, necesitamos acceso al almacenamiento de tu dispositivo.',
+                'Para guardar boletas, necesitas habilitar los permisos manualmente desde la configuración.'
+              : 'Para guardar boletas en tu dispositivo, necesitamos acceso al almacenamiento.',
         ),
         actions: [
           if (!isPermanent)
@@ -320,33 +294,6 @@ class AppPermissionHandler {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2196F3),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static void _showPermissionErrorDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 28),
-            SizedBox(width: 12),
-            Text('Error'),
-          ],
-        ),
-        content: const Text(
-          'Hubo un error al verificar los permisos. Por favor, intenta nuevamente.',
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2196F3),
-            ),
-            child: const Text('Aceptar'),
           ),
         ],
       ),
