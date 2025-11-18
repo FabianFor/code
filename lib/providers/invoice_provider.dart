@@ -38,6 +38,7 @@ class InvoiceProvider with ChangeNotifier {
     await prefs.setInt('last_invoice_number', _lastInvoiceNumber);
   }
 
+  /// ✅ ARREGLADO: Crear boleta con COPIA PROFUNDA de items
   Future<Invoice> createInvoice({
     required String customerName,
     required String customerPhone,
@@ -45,20 +46,40 @@ class InvoiceProvider with ChangeNotifier {
   }) async {
     _lastInvoiceNumber++;
 
+    // ✅ CRÍTICO: Crear copia profunda de cada item
+    // Esto evita que la boleta se modifique cuando el carrito cambie
+    final List<OrderItem> itemsCopy = items.map((item) {
+      return OrderItem(
+        productId: item.productId,
+        productName: item.productName,
+        price: item.price,
+        quantity: item.quantity,
+      );
+    }).toList();
+
     final invoice = Invoice(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       invoiceNumber: _lastInvoiceNumber,
       customerName: customerName,
       customerPhone: customerPhone,
-      items: items,
+      items: itemsCopy, // ✅ Usar la copia, no la referencia original
       createdAt: DateTime.now(),
-      total: items.fold(0, (sum, item) => sum + item.total),
+      total: itemsCopy.fold(0, (sum, item) => sum + item.total),
     );
 
     _invoices.insert(0, invoice);
     await _saveInvoices();
     notifyListeners();
+    
+    print('✅ Boleta creada con ${itemsCopy.length} items (copia profunda)');
     return invoice;
+  }
+
+  /// Eliminar boleta
+  Future<void> deleteInvoice(String id) async {
+    _invoices.removeWhere((i) => i.id == id);
+    await _saveInvoices();
+    notifyListeners();
   }
 
   Invoice? getInvoiceById(String id) {

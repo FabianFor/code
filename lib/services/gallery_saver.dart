@@ -1,12 +1,11 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// Servicio para guardar imágenes en la galería
-/// Compatible con todas las versiones de Android y políticas de Play Store
+/// Compatible con todas las versiones de Android SIN paquetes externos problemáticos
 class GallerySaver {
   /// Guarda una imagen en la galería del dispositivo
-  /// Retorna la ruta donde se guardó la imagen
   static Future<String> saveImageToGallery({
     required String imagePath,
     required String fileName,
@@ -19,44 +18,75 @@ class GallerySaver {
         throw Exception('El archivo no existe: $imagePath');
       }
 
-      final bytes = await file.readAsBytes();
-      print('📦 Bytes leídos: ${bytes.length}');
-
       if (Platform.isAndroid) {
         final androidInfo = await DeviceInfoPlugin().androidInfo;
         final sdkInt = androidInfo.version.sdkInt;
         print('📱 Android SDK: $sdkInt');
 
-        // Guardar en la galería usando image_gallery_saver
-        // Este paquete maneja automáticamente Scoped Storage y MediaStore
-        final result = await ImageGallerySaver.saveImage(
-          bytes,
-          quality: 100,
-          name: fileName,
-        );
-
-        print('✅ Resultado: $result');
-
-        if (result['isSuccess'] == true) {
-          final savedPath = result['filePath'] ?? 'Galería';
-          print('✅ Imagen guardada en: $savedPath');
-          return savedPath;
-        } else {
-          throw Exception('Error al guardar en galería');
+        // Android 10+ (API 29+) - Scoped Storage
+        // Guardar en Pictures/MiNegocio
+        final Directory? externalDir = await getExternalStorageDirectory();
+        
+        if (externalDir == null) {
+          throw Exception('No se pudo acceder al almacenamiento externo');
         }
+
+        // Navegar hacia arriba para llegar a /storage/emulated/0/
+        final String basePath = externalDir.path.split('/Android')[0];
+        final String targetPath = '$basePath/Pictures/MiNegocio';
+        
+        final Directory targetDir = Directory(targetPath);
+        if (!await targetDir.exists()) {
+          await targetDir.create(recursive: true);
+          print('📁 Carpeta creada: $targetPath');
+        }
+
+        // Copiar archivo
+        final String newPath = '$targetPath/$fileName';
+        await file.copy(newPath);
+        
+        print('✅ Imagen guardada en: $newPath');
+        
+        // Notificar al sistema (Media Scanner)
+        await _scanFile(newPath);
+        
+        return newPath;
       } else {
         // iOS
-        final result = await ImageGallerySaver.saveImage(bytes);
-        if (result['isSuccess'] == true) {
-          return result['filePath'] ?? 'Galería';
-        } else {
-          throw Exception('Error al guardar en galería');
-        }
+        final directory = await getApplicationDocumentsDirectory();
+        final newPath = '${directory.path}/$fileName';
+        await file.copy(newPath);
+        return newPath;
       }
     } catch (e, stackTrace) {
       print('❌ Error en saveImageToGallery: $e');
       print('Stack: $stackTrace');
       rethrow;
+    }
+  }
+
+  /// Notifica al sistema que un nuevo archivo fue creado (Media Scanner)
+  static Future<void> _scanFile(String path) async {
+    try {
+      if (Platform.isAndroid) {
+        // Comando para refrescar la galería en Android
+        final result = await Process.run('am', [
+          'broadcast',
+          '-a',
+          'android.intent.action.MEDIA_SCANNER_SCAN_FILE',
+          '-d',
+          'file://$path'
+        ]);
+        
+        if (result.exitCode == 0) {
+          print('📷 Media Scanner notificado');
+        } else {
+          print('⚠️ Media Scanner no disponible (normal en emuladores)');
+        }
+      }
+    } catch (e) {
+      print('⚠️ No se pudo notificar al Media Scanner: $e');
+      // No es crítico, la imagen ya está guardada
     }
   }
 
@@ -66,7 +96,7 @@ class GallerySaver {
     return 'boleta_${invoiceNumber}_$timestamp.png';
   }
 
-  /// Guarda temporalmente la imagen y luego la copia a la galería
+  /// Guarda la boleta en galería
   static Future<String> saveInvoiceToGallery({
     required String tempImagePath,
     required int invoiceNumber,

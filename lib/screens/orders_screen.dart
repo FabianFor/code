@@ -31,7 +31,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final productProvider = Provider.of<ProductProvider>(context);
     final orderProvider = Provider.of<OrderProvider>(context);
 
-    // Filtrar productos por búsqueda
     final filteredProducts = productProvider.products.where((product) {
       return _searchQuery.isEmpty ||
           product.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -40,33 +39,33 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Crear Pedido'),
+        title: Text('Crear Pedido', style: TextStyle(fontSize: 18.sp)),
         backgroundColor: const Color(0xFF2196F3),
         foregroundColor: Colors.white,
         actions: [
-          if (orderProvider.currentOrderItems.isNotEmpty)
+          if (orderProvider.currentOrderItems.isNotEmpty) ...[
             IconButton(
               icon: Stack(
                 children: [
-                  const Icon(Icons.shopping_cart),
+                  Icon(Icons.shopping_cart, size: 24.sp),
                   Positioned(
                     right: 0,
                     top: 0,
                     child: Container(
-                      padding: const EdgeInsets.all(2),
+                      padding: EdgeInsets.all(2.w),
                       decoration: BoxDecoration(
                         color: Colors.red,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
+                      constraints: BoxConstraints(
+                        minWidth: 16.w,
+                        minHeight: 16.h,
                       ),
                       child: Text(
                         '${orderProvider.currentOrderItems.length}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 10,
+                          fontSize: 10.sp,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -78,12 +77,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
               onPressed: () => _showCurrentOrderSheet(context),
               tooltip: 'Ver carrito',
             ),
-          if (orderProvider.currentOrderItems.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.delete_sweep),
+              icon: Icon(Icons.delete_sweep, size: 24.sp),
               onPressed: () => _confirmClearOrder(context),
               tooltip: 'Vaciar carrito',
             ),
+          ],
         ],
       ),
       body: Column(
@@ -100,10 +99,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
               },
               decoration: InputDecoration(
                 hintText: 'Buscar productos...',
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: TextStyle(fontSize: 14.sp),
+                prefixIcon: Icon(Icons.search, size: 20.sp),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
+                        icon: Icon(Icons.clear, size: 20.sp),
                         onPressed: () {
                           setState(() {
                             _searchQuery = '';
@@ -116,7 +116,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[100],
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 12.h,
+                ),
               ),
+              style: TextStyle(fontSize: 14.sp),
             ),
           ),
 
@@ -149,8 +154,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                 _searchQuery = '';
                               });
                             },
-                            icon: const Icon(Icons.clear),
-                            label: const Text('Limpiar búsqueda'),
+                            icon: Icon(Icons.clear, size: 18.sp),
+                            label: Text('Limpiar búsqueda',
+                                style: TextStyle(fontSize: 14.sp)),
                           ),
                         ],
                       ],
@@ -266,21 +272,41 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           trailing: ElevatedButton(
                             onPressed: product.stock > 0
                                 ? () {
-                                    orderProvider.addItemToCurrentOrder(
+                                    final orderProvider = Provider.of<OrderProvider>(
+                                        context,
+                                        listen: false);
+                                    
+                                    final added = orderProvider.addItemToCurrentOrder(
                                       OrderItem(
                                         productId: product.id,
                                         productName: product.name,
                                         price: product.price,
                                         quantity: 1,
                                       ),
+                                      product.stock,
                                     );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('${product.name} agregado'),
-                                        duration: const Duration(seconds: 1),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
+
+                                    if (added) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('${product.name} agregado',
+                                              style: TextStyle(fontSize: 14.sp)),
+                                          duration: const Duration(seconds: 1),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              '❌ Stock insuficiente para ${product.name}',
+                                              style: TextStyle(fontSize: 14.sp)),
+                                          backgroundColor: Colors.red,
+                                          duration: const Duration(seconds: 2),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
                                   }
                                 : null,
                             style: ElevatedButton.styleFrom(
@@ -288,6 +314,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                               disabledBackgroundColor: Colors.grey,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 8.h,
                               ),
                             ),
                             child: Text(
@@ -344,19 +374,28 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         children: [
                           OutlinedButton.icon(
                             onPressed: () => _showCurrentOrderSheet(context),
-                            icon: const Icon(Icons.visibility, size: 18),
-                            label: const Text('Ver'),
+                            icon: Icon(Icons.visibility, size: 18.sp),
+                            label: Text('Ver', style: TextStyle(fontSize: 13.sp)),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFF2196F3),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 8.h,
+                              ),
                             ),
                           ),
                           SizedBox(width: 8.w),
                           ElevatedButton.icon(
                             onPressed: () => _showCreateInvoiceDialog(context),
-                            icon: const Icon(Icons.receipt_long, size: 18),
-                            label: const Text('Crear Boleta'),
+                            icon: Icon(Icons.receipt_long, size: 18.sp),
+                            label: Text('Crear Boleta',
+                                style: TextStyle(fontSize: 13.sp)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF4CAF50),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 8.h,
+                              ),
                             ),
                           ),
                         ],
@@ -372,8 +411,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 
   void _showCurrentOrderSheet(BuildContext context) {
-    final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-
+    final productProvider = Provider.of<ProductProvider>(context, listen: false);
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -412,7 +451,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close),
+                          icon: Icon(Icons.close, size: 24.sp),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
@@ -434,6 +473,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                               itemCount: provider.currentOrderItems.length,
                               itemBuilder: (context, index) {
                                 final item = provider.currentOrderItems[index];
+                                final product = productProvider.getProductById(item.productId);
+                                final availableStock = product?.stock ?? 0;
+                                
                                 return Card(
                                   margin: EdgeInsets.only(bottom: 12.h),
                                   child: Padding(
@@ -446,31 +488,33 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                               MainAxisAlignment.spaceBetween,
                                           children: [
                                             Expanded(
-                                              child: Text(
-                                                item.productName,
-                                                style: TextStyle(
-                                                  fontSize: 16.sp,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    item.productName,
+                                                    style: TextStyle(
+                                                      fontSize: 16.sp,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Stock disponible: $availableStock',
+                                                    style: TextStyle(
+                                                      fontSize: 12.sp,
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                             IconButton(
-                                              icon: const Icon(Icons.delete),
+                                              icon: Icon(Icons.delete, size: 20.sp),
                                               color: Colors.red,
                                               onPressed: () {
                                                 provider.removeItemFromCurrentOrder(
                                                     item.productId);
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                        '${item.productName} eliminado'),
-                                                    duration: const Duration(
-                                                        seconds: 1),
-                                                    behavior: SnackBarBehavior
-                                                        .floating,
-                                                  ),
-                                                );
                                               },
                                             ),
                                           ],
@@ -483,13 +527,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                             Row(
                                               children: [
                                                 IconButton(
-                                                  icon: const Icon(Icons.remove),
+                                                  icon: Icon(Icons.remove, size: 18.sp),
                                                   onPressed: item.quantity > 1
                                                       ? () {
                                                           provider
                                                               .updateItemQuantity(
                                                             item.productId,
                                                             item.quantity - 1,
+                                                            availableStock,
                                                           );
                                                         }
                                                       : null,
@@ -497,6 +542,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                                     backgroundColor:
                                                         Colors.grey[200],
                                                     foregroundColor: Colors.black,
+                                                    padding: EdgeInsets.all(8.w),
                                                   ),
                                                 ),
                                                 SizedBox(width: 12.w),
@@ -509,17 +555,34 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                                 ),
                                                 SizedBox(width: 12.w),
                                                 IconButton(
-                                                  icon: const Icon(Icons.add),
+                                                  icon: Icon(Icons.add, size: 18.sp),
                                                   onPressed: () {
-                                                    provider.updateItemQuantity(
+                                                    final success = provider.updateItemQuantity(
                                                       item.productId,
                                                       item.quantity + 1,
+                                                      availableStock,
                                                     );
+                                                    
+                                                    if (!success) {
+                                                      ScaffoldMessenger.of(context)
+                                                          .showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                              '❌ Stock insuficiente. Disponible: $availableStock',
+                                                              style: TextStyle(
+                                                                  fontSize: 14.sp)),
+                                                          backgroundColor: Colors.red,
+                                                          duration:
+                                                              const Duration(seconds: 2),
+                                                        ),
+                                                      );
+                                                    }
                                                   },
                                                   style: IconButton.styleFrom(
                                                     backgroundColor:
                                                         const Color(0xFF2196F3),
                                                     foregroundColor: Colors.white,
+                                                    padding: EdgeInsets.all(8.w),
                                                   ),
                                                 ),
                                               ],
@@ -593,12 +656,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.red,
-                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
                             ),
-                            child: const Text('Vaciar'),
+                            child: Text('Vaciar', style: TextStyle(fontSize: 15.sp)),
                           ),
                         ),
                         SizedBox(width: 12.w),
@@ -611,12 +674,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF4CAF50),
-                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
                             ),
-                            child: const Text('Crear Boleta'),
+                            child: Text('Crear Boleta',
+                                style: TextStyle(fontSize: 15.sp)),
                           ),
                         ),
                       ],
@@ -636,27 +700,31 @@ class _OrdersScreenState extends State<OrdersScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange),
-            SizedBox(width: 12),
-            Text('Vaciar carrito'),
+            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24.sp),
+            SizedBox(width: 12.w),
+            Text('Vaciar carrito', style: TextStyle(fontSize: 18.sp)),
           ],
         ),
-        content: const Text('¿Estás seguro de vaciar el carrito? Se perderán todos los items.'),
+        content: Text(
+          '¿Estás seguro de vaciar el carrito? Se perderán todos los items.',
+          style: TextStyle(fontSize: 15.sp),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text('Cancelar', style: TextStyle(fontSize: 14.sp)),
           ),
           ElevatedButton(
             onPressed: () {
               Provider.of<OrderProvider>(context, listen: false).clearCurrentOrder();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Carrito vaciado'),
-                  duration: Duration(seconds: 1),
+                SnackBar(
+                  content: Text('Carrito vaciado',
+                      style: TextStyle(fontSize: 14.sp)),
+                  duration: const Duration(seconds: 1),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -665,7 +733,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Vaciar'),
+            child: Text('Vaciar', style: TextStyle(fontSize: 14.sp)),
           ),
         ],
       ),
@@ -677,7 +745,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: const Text('Crear Boleta'),
+        title: Text('Crear Boleta', style: TextStyle(fontSize: 18.sp)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -685,12 +753,19 @@ class _OrdersScreenState extends State<OrdersScreen> {
               controller: _customerNameController,
               decoration: InputDecoration(
                 labelText: 'Nombre del Cliente *',
+                labelStyle: TextStyle(fontSize: 14.sp),
                 hintText: 'Ej: Juan Pérez',
+                hintStyle: TextStyle(fontSize: 14.sp),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                prefixIcon: const Icon(Icons.person),
+                prefixIcon: Icon(Icons.person, size: 20.sp),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 12.h,
+                ),
               ),
+              style: TextStyle(fontSize: 14.sp),
               textCapitalization: TextCapitalization.words,
             ),
             SizedBox(height: 16.h),
@@ -698,12 +773,19 @@ class _OrdersScreenState extends State<OrdersScreen> {
               controller: _customerPhoneController,
               decoration: InputDecoration(
                 labelText: 'Teléfono (opcional)',
+                labelStyle: TextStyle(fontSize: 14.sp),
                 hintText: '123456789',
+                hintStyle: TextStyle(fontSize: 14.sp),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                prefixIcon: const Icon(Icons.phone),
+                prefixIcon: Icon(Icons.phone, size: 20.sp),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 12.h,
+                ),
               ),
+              style: TextStyle(fontSize: 14.sp),
               keyboardType: TextInputType.phone,
             ),
           ],
@@ -711,14 +793,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text('Cancelar', style: TextStyle(fontSize: 14.sp)),
           ),
           ElevatedButton(
             onPressed: () async {
               if (_customerNameController.text.trim().isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('⚠️ Por favor ingresa el nombre del cliente'),
+                  SnackBar(
+                    content: Text(
+                      '⚠️ Por favor ingresa el nombre del cliente',
+                      style: TextStyle(fontSize: 14.sp),
+                    ),
                     backgroundColor: Colors.orange,
                   ),
                 );
@@ -727,15 +812,44 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
               final orderProvider =
                   Provider.of<OrderProvider>(context, listen: false);
+              final productProvider =
+                  Provider.of<ProductProvider>(context, listen: false);
               final invoiceProvider =
                   Provider.of<InvoiceProvider>(context, listen: false);
 
+              // Validar stock
+              final errorMessage = orderProvider.validateCurrentOrder(
+                (productId) => productProvider.getProductById(productId)?.stock,
+              );
+
+              if (errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('❌ $errorMessage',
+                        style: TextStyle(fontSize: 14.sp)),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+                return;
+              }
+
+              // Reducir stock
+              for (final item in orderProvider.currentOrderItems) {
+                await productProvider.reduceStock(
+                  item.productId,
+                  item.quantity,
+                );
+              }
+
+              // ✅ ARREGLADO: Crear boleta con COPIA de items
               await invoiceProvider.createInvoice(
                 customerName: _customerNameController.text.trim(),
                 customerPhone: _customerPhoneController.text.trim(),
-                items: orderProvider.currentOrderItems,
+                items: orderProvider.getCurrentOrderItemsCopy(), // ✅ Copia, no referencia
               );
 
+              // Limpiar carrito DESPUÉS de crear la boleta
               orderProvider.clearCurrentOrder();
               _customerNameController.clear();
               _customerPhoneController.clear();
@@ -743,12 +857,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
               if (mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Row(
                       children: [
-                        Icon(Icons.check_circle, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text('✅ Boleta creada exitosamente'),
+                        Icon(Icons.check_circle, color: Colors.white, size: 20.sp),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            '✅ Boleta creada y stock actualizado',
+                            style: TextStyle(fontSize: 14.sp),
+                          ),
+                        ),
                       ],
                     ),
                     backgroundColor: Colors.green,
@@ -759,8 +878,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4CAF50),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
             ),
-            child: const Text('Crear'),
+            child: Text('Crear', style: TextStyle(fontSize: 14.sp)),
           ),
         ],
       ),

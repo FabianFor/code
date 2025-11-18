@@ -41,22 +41,22 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Boletas'),
+        title: Text('Boletas', style: TextStyle(fontSize: 18.sp)),
         backgroundColor: const Color(0xFF2196F3),
         foregroundColor: Colors.white,
         actions: [
           if (_filterDate != null)
             IconButton(
-              icon: const Icon(Icons.clear),
+              icon: Icon(Icons.clear, size: 22.sp),
               onPressed: () {
                 setState(() {
                   _filterDate = null;
                 });
               },
-              tooltip: 'Limpiar filtro de fecha',
+              tooltip: 'Limpiar filtro',
             ),
           IconButton(
-            icon: const Icon(Icons.calendar_today),
+            icon: Icon(Icons.calendar_today, size: 22.sp),
             onPressed: _selectFilterDate,
             tooltip: 'Filtrar por fecha',
           ),
@@ -76,10 +76,11 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
               },
               decoration: InputDecoration(
                 hintText: 'Buscar por cliente o número...',
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: TextStyle(fontSize: 14.sp),
+                prefixIcon: Icon(Icons.search, size: 20.sp),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
+                        icon: Icon(Icons.clear, size: 20.sp),
                         onPressed: () {
                           setState(() {
                             _searchQuery = '';
@@ -92,11 +93,16 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[100],
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 12.h,
+                ),
               ),
+              style: TextStyle(fontSize: 14.sp),
             ),
           ),
 
-          // Results Count & Filter Badge
+          // Results Count
           if (_searchQuery.isNotEmpty || _filterDate != null)
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -120,7 +126,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                         DateFormat('dd/MM/yyyy').format(_filterDate!),
                         style: TextStyle(fontSize: 12.sp),
                       ),
-                      deleteIcon: const Icon(Icons.close, size: 16),
+                      deleteIcon: Icon(Icons.close, size: 16.sp),
                       onDeleted: () {
                         setState(() {
                           _filterDate = null;
@@ -161,8 +167,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                                 _filterDate = null;
                               });
                             },
-                            icon: const Icon(Icons.clear_all),
-                            label: const Text('Limpiar filtros'),
+                            icon: Icon(Icons.clear_all, size: 18.sp),
+                            label: Text('Limpiar filtros',
+                                style: TextStyle(fontSize: 14.sp)),
                           ),
                         ],
                       ],
@@ -468,19 +475,19 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                           invoice,
                           businessProvider,
                         ),
-                        icon: const Icon(Icons.share),
-                        label: const Text('Compartir'),
+                        icon: Icon(Icons.share, size: 18.sp),
+                        label: Text('Compartir', style: TextStyle(fontSize: 14.sp)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4CAF50),
                           foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(width: 12.w),
+                    SizedBox(width: 8.w),
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _handleDownloadInvoice(
@@ -488,16 +495,27 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                           invoice,
                           businessProvider,
                         ),
-                        icon: const Icon(Icons.download),
-                        label: const Text('Descargar'),
+                        icon: Icon(Icons.download, size: 18.sp),
+                        label: Text('Descargar', style: TextStyle(fontSize: 14.sp)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF2196F3),
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
                       ),
+                    ),
+                    SizedBox(width: 8.w),
+                    // ✅ BOTÓN ELIMINAR
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _confirmDeleteInvoice(context, invoice);
+                      },
+                      icon: Icon(Icons.delete, size: 24.sp),
+                      color: Colors.red,
+                      tooltip: 'Eliminar',
                     ),
                   ],
                 ),
@@ -505,6 +523,63 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  // ✅ NUEVO: Confirmar eliminación
+  void _confirmDeleteInvoice(BuildContext context, dynamic invoice) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24.sp),
+            SizedBox(width: 12.w),
+            Text('Eliminar boleta', style: TextStyle(fontSize: 18.sp)),
+          ],
+        ),
+        content: Text(
+          '¿Estás seguro de eliminar la Boleta #${invoice.invoiceNumber}?\n\nEsta acción no se puede deshacer.',
+          style: TextStyle(fontSize: 15.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar', style: TextStyle(fontSize: 14.sp)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final invoiceProvider =
+                  Provider.of<InvoiceProvider>(context, listen: false);
+              
+              await invoiceProvider.deleteInvoice(invoice.id);
+              
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.white, size: 20.sp),
+                        SizedBox(width: 8.w),
+                        Text('Boleta eliminada', style: TextStyle(fontSize: 14.sp)),
+                      ],
+                    ),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Eliminar', style: TextStyle(fontSize: 14.sp)),
+          ),
+        ],
       ),
     );
   }
@@ -520,10 +595,12 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     if (!hasPermission) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('⚠️ Se necesitan permisos para compartir la boleta'),
+          SnackBar(
+            content: Text(
+              '⚠️ Se necesitan permisos para compartir',
+              style: TextStyle(fontSize: 14.sp),
+            ),
             backgroundColor: Colors.orange,
-            duration: Duration(seconds: 3),
           ),
         );
       }
@@ -541,57 +618,25 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     );
 
     try {
-      print('🔄 Generando imagen para compartir...');
       final imagePath = await InvoiceImageGenerator.generateImage(
         invoice: invoice,
         businessProfile: businessProvider.profile,
         context: context,
       );
-      print('✅ Imagen generada: $imagePath');
-
-      final file = File(imagePath);
-      if (!await file.exists()) {
-        throw Exception('El archivo no fue creado correctamente');
-      }
-      print('✅ Archivo verificado: ${await file.length()} bytes');
 
       if (context.mounted) Navigator.pop(context);
 
-      print('📤 Compartiendo imagen...');
-      final result = await Share.shareXFiles(
+      await Share.shareXFiles(
         [XFile(imagePath)],
         text: 'Boleta #${invoice.invoiceNumber}',
       );
-      print('✅ Resultado: ${result.status}');
-
-      if (context.mounted) {
-        if (result.status == ShareResultStatus.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✅ Compartido exitosamente'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        } else if (result.status == ShareResultStatus.dismissed) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('ℹ️ Compartir cancelado'),
-              backgroundColor: Colors.blue,
-            ),
-          );
-        }
-      }
-    } catch (e, stackTrace) {
-      print('❌ Error: $e');
-      print('Stack: $stackTrace');
-
+    } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ Error al compartir: ${e.toString()}'),
+            content: Text('❌ Error: $e', style: TextStyle(fontSize: 14.sp)),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -603,17 +648,18 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     dynamic invoice,
     BusinessProvider businessProvider,
   ) async {
-    // ✅ ARREGLADO: Ahora SÍ guarda en la galería
     final hasPermission =
         await AppPermissionHandler.requestStoragePermission(context);
 
     if (!hasPermission) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('⚠️ Se necesitan permisos para descargar la boleta'),
+          SnackBar(
+            content: Text(
+              '⚠️ Se necesitan permisos para descargar',
+              style: TextStyle(fontSize: 14.sp),
+            ),
             backgroundColor: Colors.orange,
-            duration: Duration(seconds: 3),
           ),
         );
       }
@@ -631,67 +677,36 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     );
 
     try {
-      print('🔄 Generando imagen temporal...');
       final tempImagePath = await InvoiceImageGenerator.generateImage(
         invoice: invoice,
         businessProfile: businessProvider.profile,
         context: context,
       );
-      print('✅ Imagen temporal: $tempImagePath');
 
-      // ✅ NUEVO: Guardar en galería usando GallerySaver
-      print('💾 Guardando en galería...');
       final savedPath = await GallerySaver.saveInvoiceToGallery(
         tempImagePath: tempImagePath,
         invoiceNumber: invoice.invoiceNumber,
       );
-      print('✅ Guardado en galería: $savedPath');
-
-      if (context.mounted) Navigator.pop(context);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: Colors.white),
-                    SizedBox(width: 8.w),
-                    const Text('✅ Guardado en galería'),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Boleta #${invoice.invoiceNumber}',
-                  style: TextStyle(fontSize: 12.sp),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-            action: SnackBarAction(
-              label: 'OK',
-              textColor: Colors.white,
-              onPressed: () {},
-            ),
-          ),
-        );
-      }
-    } catch (e, stackTrace) {
-      print('❌ Error: $e');
-      print('Stack: $stackTrace');
 
       if (context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ Error al descargar: ${e.toString()}'),
+            content: Text(
+              '✅ Guardado en galería',
+              style: TextStyle(fontSize: 14.sp),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Error: $e', style: TextStyle(fontSize: 14.sp)),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
           ),
         );
       }

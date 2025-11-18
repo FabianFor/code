@@ -30,17 +30,30 @@ class OrderProvider with ChangeNotifier {
     await prefs.setString('orders', jsonString);
   }
 
-  void addItemToCurrentOrder(OrderItem item) {
+  /// Agregar item al carrito con validación de stock
+  bool addItemToCurrentOrder(OrderItem item, int availableStock) {
     final existingIndex = _currentOrderItems.indexWhere(
       (i) => i.productId == item.productId,
     );
 
     if (existingIndex != -1) {
-      _currentOrderItems[existingIndex].quantity += item.quantity;
+      final newQuantity = _currentOrderItems[existingIndex].quantity + item.quantity;
+      
+      if (newQuantity > availableStock) {
+        return false;
+      }
+      
+      _currentOrderItems[existingIndex].quantity = newQuantity;
     } else {
+      if (item.quantity > availableStock) {
+        return false;
+      }
+      
       _currentOrderItems.add(item);
     }
+    
     notifyListeners();
+    return true;
   }
 
   void removeItemFromCurrentOrder(String productId) {
@@ -48,16 +61,43 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateItemQuantity(String productId, int quantity) {
+  /// Actualizar cantidad con validación de stock
+  bool updateItemQuantity(String productId, int quantity, int availableStock) {
     final index = _currentOrderItems.indexWhere((i) => i.productId == productId);
+    
     if (index != -1) {
       if (quantity > 0) {
+        if (quantity > availableStock) {
+          return false;
+        }
+        
         _currentOrderItems[index].quantity = quantity;
       } else {
         _currentOrderItems.removeAt(index);
       }
       notifyListeners();
+      return true;
     }
+    
+    return false;
+  }
+
+  /// Validar todo el carrito antes de crear boleta
+  String? validateCurrentOrder(Function(String) getStock) {
+    for (final item in _currentOrderItems) {
+      final availableStock = getStock(item.productId);
+      
+      if (availableStock == null) {
+        return 'Producto "${item.productName}" no encontrado';
+      }
+      
+      if (item.quantity > availableStock) {
+        return 'Stock insuficiente para "${item.productName}". '
+            'Disponible: $availableStock, Solicitado: ${item.quantity}';
+      }
+    }
+    
+    return null;
   }
 
   Future<Order> createOrder() async {
@@ -73,8 +113,31 @@ class OrderProvider with ChangeNotifier {
     return order;
   }
 
+  /// ✅ ARREGLADO: Limpiar carrito completamente
   void clearCurrentOrder() {
     _currentOrderItems.clear();
     notifyListeners();
+    print('🧹 Carrito limpiado completamente');
+  }
+
+  /// Obtener copia de los items actuales (para crear boleta)
+  /// Esto devuelve una copia, no la referencia original
+  List<OrderItem> getCurrentOrderItemsCopy() {
+    return _currentOrderItems.map((item) {
+      return OrderItem(
+        productId: item.productId,
+        productName: item.productName,
+        price: item.price,
+        quantity: item.quantity,
+      );
+    }).toList();
+  }
+
+  Order? getOrderById(String id) {
+    try {
+      return _orders.firstWhere((o) => o.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 }

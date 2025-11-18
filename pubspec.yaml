@@ -23,7 +23,8 @@ dependencies:
   
   # Images
   image_picker: ^1.0.4
-  image_gallery_saver: ^2.0.3
+  # ❌ REMOVIDO: image_gallery_saver (incompatible con Gradle 8+)
+  # ✅ Ahora usamos implementación nativa en gallery_saver.dart
   
   # Sharing
   share_plus: ^7.2.1

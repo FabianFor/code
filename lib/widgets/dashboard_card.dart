@@ -47,6 +47,8 @@ class DashboardCard extends StatelessWidget {
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 8.h),
                 Text(
@@ -56,10 +58,13 @@ class DashboardCard extends StatelessWidget {
                     fontSize: 32.sp,
                     fontWeight: FontWeight.bold,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
+          SizedBox(width: 12.w),
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(

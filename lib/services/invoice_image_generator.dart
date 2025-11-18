@@ -11,14 +11,14 @@ import '../models/business_profile.dart';
 class InvoiceImageGenerator {
   static final GlobalKey _globalKey = GlobalKey();
 
-  /// Genera una imagen temporal de la boleta con PERFIL COMPLETO
+  /// Genera imagen de boleta con diseño minimalista
   static Future<String> generateImage({
     required Invoice invoice,
     required BusinessProfile businessProfile,
     required BuildContext context,
   }) async {
     try {
-      print('📸 Iniciando generación de imagen con perfil completo...');
+      print('📸 Generando boleta minimalista...');
       
       final overlay = Overlay.of(context);
       late OverlayEntry overlayEntry;
@@ -32,8 +32,8 @@ class InvoiceImageGenerator {
             child: Material(
               child: Container(
                 width: 600,
-                color: Colors.white,
-                child: InvoiceImageWidget(
+                color: const Color(0xFFF5F3EE), // Fondo beige/crema
+                child: MinimalistInvoiceWidget(
                   invoice: invoice,
                   businessProfile: businessProfile,
                 ),
@@ -53,7 +53,7 @@ class InvoiceImageGenerator {
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      print('✅ Widget capturado: ${pngBytes.length} bytes');
+      print('✅ Imagen capturada: ${pngBytes.length} bytes');
 
       overlayEntry.remove();
 
@@ -63,21 +63,21 @@ class InvoiceImageGenerator {
       final file = File(tempPath);
       await file.writeAsBytes(pngBytes);
 
-      print('✅ Imagen temporal guardada: $tempPath');
+      print('✅ Imagen guardada: $tempPath');
       return tempPath;
     } catch (e, stackTrace) {
-      print('❌ Error en generateImage: $e');
+      print('❌ Error: $e');
       print('Stack: $stackTrace');
       rethrow;
     }
   }
 }
 
-class InvoiceImageWidget extends StatelessWidget {
+class MinimalistInvoiceWidget extends StatelessWidget {
   final Invoice invoice;
   final BusinessProfile businessProfile;
 
-  const InvoiceImageWidget({
+  const MinimalistInvoiceWidget({
     super.key,
     required this.invoice,
     required this.businessProfile,
@@ -87,506 +87,290 @@ class InvoiceImageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 600,
-      color: Colors.white,
-      padding: const EdgeInsets.all(32),
+      color: const Color(0xFFF5F3EE), // Fondo beige/crema como la imagen
+      padding: const EdgeInsets.all(50),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ✅ HEADER CON PERFIL COMPLETO
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          // ==================== HEADER ====================
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // NÚMERO DE BOLETA (Izquierda)
+              Text(
+                'N° ${invoice.invoiceNumber.toString().padLeft(7, '0')}',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2C2C2C),
+                  letterSpacing: 1,
+                ),
               ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ✅ LOGO (si existe)
-                if (businessProfile.logoPath.isNotEmpty)
-                  Container(
-                    width: 100,
-                    height: 100,
-                    margin: const EdgeInsets.only(right: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+
+              // LOGO Y INFO DEL NEGOCIO (Derecha)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Logo (si existe)
+                  if (businessProfile.logoPath.isNotEmpty)
+                    Container(
+                      width: 100,
+                      height: 100,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          File(businessProfile.logoPath),
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.transparent,
+                              child: const Icon(
+                                Icons.store,
+                                size: 60,
+                                color: Color(0xFF4A7C8C),
+                              ),
+                            );
+                          },
                         ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        File(businessProfile.logoPath),
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.store,
-                            size: 50,
-                            color: Color(0xFF2196F3),
-                          );
-                        },
                       ),
                     ),
-                  ),
 
-                // ✅ INFORMACIÓN DEL NEGOCIO
+                  // Nombre del negocio
+                  Text(
+                    businessProfile.businessName.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF4A7C8C),
+                      letterSpacing: 1.5,
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Email
+                  if (businessProfile.email.isNotEmpty)
+                    Text(
+                      businessProfile.email,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF5C5C5C),
+                      ),
+                    ),
+
+                  // Dirección
+                  if (businessProfile.address.isNotEmpty)
+                    Text(
+                      'Dirección: ${businessProfile.address}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF5C5C5C),
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+
+                  // Teléfono
+                  if (businessProfile.phone.isNotEmpty)
+                    Text(
+                      businessProfile.phone,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF5C5C5C),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 40),
+
+          // ==================== TABLA DE PRODUCTOS ====================
+          // Header de la tabla
+          Container(
+            padding: const EdgeInsets.only(bottom: 8),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0xFF2C2C2C),
+                  width: 1.5,
+                ),
+              ),
+            ),
+            child: const Row(
+              children: [
+                SizedBox(
+                  width: 60,
+                  child: Text(
+                    'CANT.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2C2C2C),
+                    ),
+                  ),
+                ),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        businessProfile.businessName,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      
-                      // ✅ TELÉFONO (si existe)
-                      if (businessProfile.phone.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.phone, color: Colors.white, size: 16),
-                              const SizedBox(width: 8),
-                              Text(
-                                businessProfile.phone,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                      // ✅ EMAIL (si existe)
-                      if (businessProfile.email.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.email, color: Colors.white, size: 16),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  businessProfile.email,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                      // ✅ DIRECCIÓN (si existe)
-                      if (businessProfile.address.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(Icons.location_on, color: Colors.white, size: 16),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  businessProfile.address,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                  flex: 3,
+                  child: Text(
+                    'DESCRIPCIÓN',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2C2C2C),
+                    ),
                   ),
                 ),
-
-                // ✅ ICONO DE BOLETA
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+                SizedBox(
+                  width: 100,
+                  child: Text(
+                    'PRECIO UNIT.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2C2C2C),
+                    ),
+                    textAlign: TextAlign.right,
                   ),
-                  child: const Icon(
-                    Icons.receipt_long,
-                    size: 48,
-                    color: Colors.white,
+                ),
+                SizedBox(width: 20),
+                SizedBox(
+                  width: 100,
+                  child: Text(
+                    'TOTAL',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2C2C2C),
+                    ),
+                    textAlign: TextAlign.right,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 32),
 
-          // Número de boleta y total
+          const SizedBox(height: 12),
+
+          // Items de la tabla
+          ...invoice.items.map((item) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 60,
+                    child: Text(
+                      '${item.quantity}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Color(0xFF2C2C2C),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      item.productName,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Color(0xFF2C2C2C),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      '\$${item.price.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Color(0xFF2C2C2C),
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      '\$${item.total.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Color(0xFF2C2C2C),
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+
+          const SizedBox(height: 20),
+
+          // ==================== TOTAL ====================
           Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2196F3),
-              borderRadius: BorderRadius.circular(12),
+            padding: const EdgeInsets.only(top: 12),
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Color(0xFF2C2C2C),
+                  width: 1.5,
+                ),
+              ),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'BOLETA DE VENTA',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '#${invoice.invoiceNumber.toString().padLeft(6, '0')}',
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'TOTAL',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '\$${invoice.total.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Fecha y hora
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.calendar_today, size: 16, color: Colors.black54),
-                const SizedBox(width: 8),
-                Text(
-                  DateFormat('dd/MM/yyyy  •  HH:mm').format(invoice.createdAt),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Información del cliente
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 const Text(
-                  'CLIENTE',
+                  'TOTAL: ',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black54,
+                    color: Color(0xFF2C2C2C),
+                  ),
+                ),
+                Text(
+                  '\$${invoice.total.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2C2C2C),
                     letterSpacing: 1,
                   ),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(Icons.person, size: 20, color: Colors.black54),
-                    const SizedBox(width: 12),
-                    Text(
-                      invoice.customerName,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                if (invoice.customerPhone.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.phone, size: 18, color: Colors.black54),
-                      const SizedBox(width: 12),
-                      Text(
-                        invoice.customerPhone,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ],
             ),
           ),
-          const SizedBox(height: 32),
 
-          // Lista de productos
-          const Text(
-            'DETALLE DE PRODUCTOS',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1,
+          const SizedBox(height: 40),
+
+          // ==================== MENSAJE FINAL ====================
+          const Center(
+            child: Text(
+              'Gracias por su preferencia.',
+              style: TextStyle(
+                fontSize: 15,
+                color: Color(0xFF5C5C5C),
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ),
-          const SizedBox(height: 16),
 
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300, width: 2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                // Header de tabla
-                Container(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey.shade300, width: 2),
-                    ),
-                  ),
-                  child: const Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          'PRODUCTO',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 80,
-                        child: Text(
-                          'CANT.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 100,
-                        child: Text(
-                          'PRECIO',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 100,
-                        child: Text(
-                          'TOTAL',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
+          const SizedBox(height: 20),
 
-                // Items
-                ...invoice.items.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final item = entry.value;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      border: index < invoice.items.length - 1
-                          ? Border(
-                              bottom: BorderSide(
-                                color: Colors.grey.shade200,
-                              ),
-                            )
-                          : null,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Text(
-                            item.productName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 80,
-                          child: Text(
-                            'x${item.quantity}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 100,
-                          child: Text(
-                            '\$${item.price.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 100,
-                          child: Text(
-                            '\$${item.total.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF4CAF50),
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.only(top: 16),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(color: Colors.grey.shade300, width: 2),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'TOTAL A PAGAR',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '\$${invoice.total.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF4CAF50),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // Footer
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Column(
-              children: [
-                Text(
-                  '¡Gracias por su compra!',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Este documento es una boleta de venta válida',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+          // Fecha y hora (pequeño, abajo)
+          Center(
+            child: Text(
+              DateFormat('dd/MM/yyyy HH:mm').format(invoice.createdAt),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF8C8C8C),
+              ),
             ),
           ),
         ],
