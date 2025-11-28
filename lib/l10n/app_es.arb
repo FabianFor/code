@@ -1,0 +1,72 @@
+{
+  "@@locale": "es",
+  
+  "appName": "MiNegocio",
+  "dashboard": "Dashboard",
+  "products": "Productos",
+  "orders": "Pedidos",
+  "invoices": "Boletas",
+  "settings": "Configuración",
+  
+  "productsRegistered": "Productos Registrados",
+  "ordersPlaced": "Pedidos Realizados",
+  "totalRevenue": "Ingresos Totales",
+  
+  "addProduct": "Agregar",
+  "newProduct": "Nuevo Producto",
+  "editProduct": "Editar Producto",
+  "deleteProduct": "Eliminar Producto",
+  
+  "productName": "Nombre del Producto",
+  "price": "Precio",
+  "description": "Descripción",
+  "category": "Categoría",
+  "stock": "Stock",
+  "addImage": "Agregar imagen",
+  
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "edit": "Editar",
+  "share": "Compartir",
+  "download": "Descargar",
+  
+  "createOrder": "Crear Pedido",
+  "cart": "Carrito",
+  "viewCart": "Ver carrito",
+  "clearCart": "Vaciar carrito",
+  "createInvoice": "Crear Boleta",
+  
+  "customerName": "Nombre del Cliente",
+  "customerPhone": "Teléfono",
+  "search": "Buscar",
+  
+  "total": "Total",
+  "quantity": "Cantidad",
+  "subtotal": "Subtotal",
+  
+  "currency": "Moneda",
+  "language": "Idioma",
+  "businessProfile": "Perfil del Negocio",
+  "businessName": "Nombre del Negocio",
+  "phone": "Teléfono",
+  "email": "Email",
+  "address": "Dirección",
+  
+  "noProducts": "No hay productos registrados",
+  "noOrders": "No hay pedidos registrados",
+  "noInvoices": "No hay boletas registradas",
+  
+  "confirmDelete": "Confirmar eliminación",
+  "deleteConfirmation": "¿Estás seguro de eliminar este elemento?",
+  "cannotUndo": "Esta acción no se puede deshacer",
+  
+  "successSaved": "Guardado exitosamente",
+  "successDeleted": "Eliminado exitosamente",
+  "error": "Error",
+  
+  "food": "Comida",
+  "drinks": "Bebidas",
+  "desserts": "Postres",
+  "others": "Otros"
+}

@@ -1,0 +1,72 @@
+{
+  "@@locale": "zh",
+  
+  "appName": "我的生意",
+  "dashboard": "仪表板",
+  "products": "产品",
+  "orders": "订单",
+  "invoices": "发票",
+  "settings": "设置",
+  
+  "productsRegistered": "已注册产品",
+  "ordersPlaced": "已下订单",
+  "totalRevenue": "总收入",
+  
+  "addProduct": "添加",
+  "newProduct": "新产品",
+  "editProduct": "编辑产品",
+  "deleteProduct": "删除产品",
+  
+  "productName": "产品名称",
+  "price": "价格",
+  "description": "描述",
+  "category": "类别",
+  "stock": "库存",
+  "addImage": "添加图片",
+  
+  "save": "保存",
+  "cancel": "取消",
+  "delete": "删除",
+  "edit": "编辑",
+  "share": "分享",
+  "download": "下载",
+  
+  "createOrder": "创建订单",
+  "cart": "购物车",
+  "viewCart": "查看购物车",
+  "clearCart": "清空购物车",
+  "createInvoice": "创建发票",
+  
+  "customerName": "客户姓名",
+  "customerPhone": "电话",
+  "search": "搜索",
+  
+  "total": "总计",
+  "quantity": "数量",
+  "subtotal": "小计",
+  
+  "currency": "货币",
+  "language": "语言",
+  "businessProfile": "商业资料",
+  "businessName": "商家名称",
+  "phone": "电话",
+  "email": "电子邮件",
+  "address": "地址",
+  
+  "noProducts": "没有注册产品",
+  "noOrders": "没有注册订单",
+  "noInvoices": "没有注册发票",
+  
+  "confirmDelete": "确认删除",
+  "deleteConfirmation": "您确定要删除此项吗？",
+  "cannotUndo": "此操作无法撤消",
+  
+  "successSaved": "保存成功",
+  "successDeleted": "删除成功",
+  "error": "错误",
+  
+  "food": "食品",
+  "drinks": "饮料",
+  "desserts": "甜点",
+  "others": "其他"
+}

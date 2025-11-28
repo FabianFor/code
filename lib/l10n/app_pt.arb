@@ -1,0 +1,72 @@
+{
+  "@@locale": "pt",
+  
+  "appName": "MeuNegócio",
+  "dashboard": "Painel",
+  "products": "Produtos",
+  "orders": "Pedidos",
+  "invoices": "Faturas",
+  "settings": "Configurações",
+  
+  "productsRegistered": "Produtos Registrados",
+  "ordersPlaced": "Pedidos Realizados",
+  "totalRevenue": "Receita Total",
+  
+  "addProduct": "Adicionar",
+  "newProduct": "Novo Produto",
+  "editProduct": "Editar Produto",
+  "deleteProduct": "Excluir Produto",
+  
+  "productName": "Nome do Produto",
+  "price": "Preço",
+  "description": "Descrição",
+  "category": "Categoria",
+  "stock": "Estoque",
+  "addImage": "Adicionar imagem",
+  
+  "save": "Salvar",
+  "cancel": "Cancelar",
+  "delete": "Excluir",
+  "edit": "Editar",
+  "share": "Compartilhar",
+  "download": "Baixar",
+  
+  "createOrder": "Criar Pedido",
+  "cart": "Carrinho",
+  "viewCart": "Ver carrinho",
+  "clearCart": "Limpar carrinho",
+  "createInvoice": "Criar Fatura",
+  
+  "customerName": "Nome do Cliente",
+  "customerPhone": "Telefone",
+  "search": "Buscar",
+  
+  "total": "Total",
+  "quantity": "Quantidade",
+  "subtotal": "Subtotal",
+  
+  "currency": "Moeda",
+  "language": "Idioma",
+  "businessProfile": "Perfil do Negócio",
+  "businessName": "Nome do Negócio",
+  "phone": "Telefone",
+  "email": "Email",
+  "address": "Endereço",
+  
+  "noProducts": "Nenhum produto registrado",
+  "noOrders": "Nenhum pedido registrado",
+  "noInvoices": "Nenhuma fatura registrada",
+  
+  "confirmDelete": "Confirmar exclusão",
+  "deleteConfirmation": "Tem certeza de que deseja excluir este item?",
+  "cannotUndo": "Esta ação não pode ser desfeita",
+  
+  "successSaved": "Salvo com sucesso",
+  "successDeleted": "Excluído com sucesso",
+  "error": "Erro",
+  
+  "food": "Comida",
+  "drinks": "Bebidas",
+  "desserts": "Sobremesas",
+  "others": "Outros"
+}

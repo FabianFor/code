@@ -1,0 +1,72 @@
+{
+  "@@locale": "en",
+  
+  "appName": "MyBusiness",
+  "dashboard": "Dashboard",
+  "products": "Products",
+  "orders": "Orders",
+  "invoices": "Invoices",
+  "settings": "Settings",
+  
+  "productsRegistered": "Registered Products",
+  "ordersPlaced": "Orders Placed",
+  "totalRevenue": "Total Revenue",
+  
+  "addProduct": "Add",
+  "newProduct": "New Product",
+  "editProduct": "Edit Product",
+  "deleteProduct": "Delete Product",
+  
+  "productName": "Product Name",
+  "price": "Price",
+  "description": "Description",
+  "category": "Category",
+  "stock": "Stock",
+  "addImage": "Add image",
+  
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "share": "Share",
+  "download": "Download",
+  
+  "createOrder": "Create Order",
+  "cart": "Cart",
+  "viewCart": "View cart",
+  "clearCart": "Clear cart",
+  "createInvoice": "Create Invoice",
+  
+  "customerName": "Customer Name",
+  "customerPhone": "Phone",
+  "search": "Search",
+  
+  "total": "Total",
+  "quantity": "Quantity",
+  "subtotal": "Subtotal",
+  
+  "currency": "Currency",
+  "language": "Language",
+  "businessProfile": "Business Profile",
+  "businessName": "Business Name",
+  "phone": "Phone",
+  "email": "Email",
+  "address": "Address",
+  
+  "noProducts": "No products registered",
+  "noOrders": "No orders registered",
+  "noInvoices": "No invoices registered",
+  
+  "confirmDelete": "Confirm deletion",
+  "deleteConfirmation": "Are you sure you want to delete this item?",
+  "cannotUndo": "This action cannot be undone",
+  
+  "successSaved": "Successfully saved",
+  "successDeleted": "Successfully deleted",
+  "error": "Error",
+  
+  "food": "Food",
+  "drinks": "Drinks",
+  "desserts": "Desserts",
+  "others": "Others"
+}

@@ -10,6 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
   
+  # Localización (para multiidioma)
+  flutter_localizations:
+    sdk: flutter
+  
   # State Management
   provider: ^6.1.1
   
@@ -23,8 +27,6 @@ dependencies:
   
   # Images
   image_picker: ^1.0.4
-  # ❌ REMOVIDO: image_gallery_saver (incompatible con Gradle 8+)
-  # ✅ Ahora usamos implementación nativa en gallery_saver.dart
   
   # Sharing
   share_plus: ^7.2.1
@@ -46,3 +48,4 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true  # ✅ Necesario para generación automática de traducciones
